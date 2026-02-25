@@ -6,21 +6,13 @@ import bcrypt
 import os
 from datetime import datetime, timedelta
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__)
 
 # Configuration - Vercel compatible
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'kodbank-secret-key-2024')
 
-# Database path - use instance folder for Flask, /tmp for Vercel
-instance_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
-if not os.path.exists(instance_dir):
-    os.makedirs(instance_dir)
-
-# Check if we're on Vercel or local
-if os.environ.get('VERCEL'):
-    db_path = os.path.join('/tmp', 'kodbank.db')
-else:
-    db_path = os.path.join(instance_dir, 'kodbank.db')
+# Database path - use /tmp for Vercel serverless
+db_path = os.path.join('/tmp', 'kodbank.db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -214,19 +206,21 @@ def get_transactions():
 # Serve frontend
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Read and serve the HTML file - try multiple paths for Vercel compatibility
+    possible_paths = [
+        'templates/index.html',
+        '../templates/index.html',
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'index.html')
+    ]
+    
+    for html_path in possible_paths:
+        try:
+            with open(html_path, 'r') as f:
+                return f.read(), 200, {'Content-Type': 'text/html'}
+        except:
+            continue
+    
+    return jsonify({'message': 'KodBank API is running'}), 200
 
 # Vercel handler - Required for serverless deployment
 app.debug = False
-
-# For Vercel serverless functions (WSGI wrapper)
-def handler(environ, start_response):
-    return app(environ, start_response)
-
-if __name__ == '__main__':
-    print("="*50)
-    print("Starting KodBank Server...")
-    print("Server running at: http://localhost:5000")
-    print("Press Ctrl+C to stop the server")
-    print("="*50)
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
