@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodBank - Your Trusted Digital Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        :root {
+            --primary: #1a1a2e; --secondary: #16213e; --accent: #e94560;
+            --success: #00d9a5; --background: #0f0f1a;
+            --card-bg: #1f1f3a; --text-primary: #ffffff; --text-secondary: #a0a0b0;
+            --gradient: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+        }
+        body { background: var(--background); min-height: 100vh; color: var(--text-primary); overflow-x: hidden; }
+        .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(ellipse at 20% 80%, rgba(233, 69, 96, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 20%, rgba(22, 33, 62, 0.8) 0%, transparent 50%); }
+        .bg-pattern::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 50px 50px; }
+        .header { background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(10px); padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: none; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+        .logo-icon { width: 40px; height: 40px; background: var(--gradient); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .nav-links { display: flex; gap: 0.5rem; align-items: center; }
+        .nav-btn { background: transparent; border: none; color: var(--text-secondary); font-size: 0.9rem;
+            cursor: pointer; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; }
+        .nav-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.1); }
+        .container { min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 2rem; padding-top: 6rem; padding-bottom: 6rem; }
+        .auth-container { width: 100%; max-width: 420px; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: var(--card-bg); border-radius: 20px; padding: 2.5rem; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--gradient); }
+        .card-logo { text-align: center; margin-bottom: 2rem; }
+        .card-logo .logo-icon { width: 70px; height: 70px; margin: 0 auto 1rem; font-size: 2rem; }
+        .card-logo h1 { font-size: 2rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .card-logo p { color: var(--text-secondary); margin-top: 0.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 0.875rem 1rem; background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--text-primary);
+            font-size: 1rem; transition: all 0.3s ease; }
+        .form-group input:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        .form-group input::placeholder { color: rgba(255,255,255,0.3); }
+        .btn { width: 100%; padding: 1rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease; margin-bottom: 1rem; }
+        .btn-primary { background: var(--gradient); color: white; box-shadow: 0 10px 30px rgba(233, 69, 96, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(233, 69, 96, 0.4); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+        .btn-success { background: linear-gradient(135deg, #00d9a5 0%, #00b894 100%); color: white; }
+        .link { color: var(--accent); text-decoration: none; font-weight: 500; }
+        .link:hover { text-decoration: underline; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 1rem; }
+        .message { padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: none; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .message.error { background: rgba(233, 69, 96, 0.2); border: 1px solid var(--accent); color: #ff6b6b; }
+        .message.success { background: rgba(0, 217, 165, 0.2); border: 1px solid var(--success); color: var(--success); }
+        .dashboard { display: none; width: 100%; max-width: 500px; animation: fadeIn 0.5s ease; }
+        .dashboard.active { display: block; }
+        .welcome-section { text-align: center; margin-bottom: 2rem; }
+        .welcome-section h2 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .welcome-section p { color: var(--text-secondary); }
+        .balance-card { background: var(--gradient); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem;
+            text-align: center; box-shadow: 0 20px 40px rgba(233, 69, 96, 0.3); }
+        .balance-card .label { font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem; }
+        .balance-card .amount { font-size: 3rem; font-weight: 700; }
+        .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .action-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+            padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+        .action-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(233, 69, 96, 0.2); }
+        .action-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .action-card h3 { font-size: 1rem; font-weight: 600; }
+        .transactions-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .transactions-card h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem;
+            border-radius: 12px; margin-bottom: 0.5rem; background: rgba(255,255,255,0.03); }
+        .transaction-item:last-child { margin-bottom: 0; }
+        .transaction-info { display: flex; align-items: center; gap: 0.75rem; }
+        .transaction-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .transaction-icon.sent { background: rgba(233, 69, 96, 0.2); }
+        .transaction-icon.received { background: rgba(0, 217, 165, 0.2); }
+        .transaction-details h4 { font-size: 0.9rem; font-weight: 600; }
+        .transaction-details p { font-size: 0.75rem; color: var(--text-secondary); }
+        .transaction-amount { font-weight: 600; font-size: 1rem; }
+        .transaction-amount.sent { color: var(--accent); }
+        .transaction-amount.received { color: var(--success); }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--card-bg); border-radius: 20px; padding: 2rem; max-width: 400px; width: 100%; animation: modalIn 0.3s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal h3 { font-size: 1.5rem; margin-bottom: 1rem; text-align: center; }
+        .modal p { color: var(--text-secondary); text-align: center; margin-bottom: 1.5rem; }
+        .modal .amount { font-size: 2rem; font-weight: 700; text-align: center; color: var(--accent); margin-bottom: 1.5rem; }
+        .modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; margin-right: 0.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .page { display: none; }
+        .page.active { display: block; }
+        .user-info { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-right: 1rem; }
+        .chatbot-toggle { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4); z-index: 1000; font-size: 1.5rem; transition: transform 0.3s ease; }
+        .chatbot-toggle:hover { transform: scale(1.1); }
+        .chatbot-container { position: fixed; bottom: 90px; right: 20px; width: 350px; max-height: 450px;
+            background: var(--card-bg); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1); display: none; flex-direction: column; z-index: 1000; }
+        .chatbot-container.show { display: flex; }
+        .chatbot-header { background: var(--gradient); padding: 1rem; border-radius: 20px 20px 0 0; display: flex; align-items: center; gap: 0.75rem; }
+        .chatbot-header .avatar { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .chatbot-header h3 { font-size: 1rem; font-weight: 600; }
+        .chatbot-header p { font-size: 0.75rem; opacity: 0.8; }
+        .chatbot-messages { flex: 1; padding: 1rem; overflow-y: auto; max-height: 280px; }
+        .chat-message { margin-bottom: 1rem; animation: slideIn 0.3s ease; }
+        .chat-message.bot { text-align: left; }
+        .chat-message.user { text-align: right; }
+        .chat-message .bubble { display: inline-block; padding: 0.75rem 1rem; border-radius: 15px; max-width: 80%; font-size: 0.9rem; line-height: 1.4; }
+        .chat-message.bot .bubble { background: rgba(255,255,255,0.1); color: var(--text-primary); border-bottom-left-radius: 2px; }
+        .chat-message.user .bubble { background: var(--gradient); color: white; border-bottom-right-radius: 2px; }
+        .chatbot-input { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 0.5rem; }
+        .chatbot-input input { flex: 1; padding: 0.75rem 1rem; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; color: var(--text-primary); font-size: 0.9rem; }
+        .chatbot-input input:focus { outline: none; border-color: var(--accent); }
+        .chatbot-input button { width: 40px; height: 40px; background: var(--gradient); border: none; border-radius: 50%;
+            color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .verified-info { background: rgba(0, 217, 165, 0.1); border: 1px solid var(--success); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; text-align: center; }
+        .verified-info p { color: var(--success); font-size: 0.875rem; margin-bottom: 0.25rem; }
+        .verified-info span { color: var(--text-secondary); font-size: 0.8rem; }
+        @media (max-width: 480px) {
+            .container { padding: 1rem; padding-top: 5rem; }
+            .card { padding: 1.5rem; }
+            .balance-card .amount { font-size: 2.5rem; }
+            .chatbot-container { width: calc(100% - 40px); right: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <header class="header" id="header">
+        <div class="logo"><div class="logo-icon">💰</div><span>KodBank</span></div>
+        <nav class="nav-links">
+            <span class="user-info" id="userInfo"></span>
+            <button class="nav-btn" onclick="showDashboard()">Dashboard</button>
+            <button class="nav-btn" onclick="showBalancePage()">Check Balance</button>
+            <button class="nav-btn" onclick="showTransferPage()">Transfer</button>
+            <button class="nav-btn" onclick="logout()">Logout</button>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="auth-container page active" id="loginPage">
+            <div class="card">
+                <div class="card-logo"><div class="logo-icon">💰</div><h1>KodBank</h1><p>Your Trusted Digital Bank</p></div>
+                <div class="message" id="loginMessage"></div>
+                <form id="loginForm">
+                    <div class="form-group"><label>User ID</label><input type="text" id="loginUserid" placeholder="Enter your User ID" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter your password" required></div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">Login to Account</button>
+                </form>
+                <p class="text-center mt-2">Don't have an account? <a href="#" class="link" onclick="showRegister()">Register Now</a></p>
+            </div>
+        </div>
+        <div class="auth-container page" id="registerPage">
+            <div class="card">
+                <div class="card-logo"><div class="logo-icon">💰</div><h1>KodBank</h1><p>Create Your Account</p></div>
+                <div class="message" id="registerMessage"></div>
+                <form id="registerForm">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="regFullName" placeholder="Enter your full name" required></div>
+                    <div class="form-group"><label>User ID</label><input type="text" id="regUserid" placeholder="Choose a unique User ID" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="Enter your email" required></div>
+                    <div class="form-group"><label>Phone Number</label><input type="tel" id="regPhone" placeholder="Enter your phone number" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="Create a password (min 6 characters)" required></div>
+                    <div class="form-group"><label>Confirm Password</label><input type="password" id="regConfirmPassword" placeholder="Confirm your password" required></div>
+                    <button type="submit" class="btn btn-primary" id="registerBtn">Create Account</button>
+                </form>
+                <p class="text-center mt-2">Already have an account? <a href="#" class="link" onclick="showLogin()">Login</a></p>
+            </div>
+        </div>
+        <div class="dashboard" id="dashboard">
+            <div class="welcome-section"><h2>Welcome back, <span id="welcomeName">User</span>!</h2><p>Your Trusted Digital Bank</p></div>
+            <div class="quick-actions">
+                <div class="action-card" onclick="showBalancePage()"><div class="icon">💵</div><h3>Check Balance</h3></div>
+                <div class="action-card" onclick="showTransferPage()"><div class="icon">💸</div><h3>Transfer Money</h3></div>
+            </div>
+            <div class="transactions-card"><h3>Recent Transactions</h3><div id="transactionsList"><p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No transactions yet</p></div></div>
+        </div>
+        <div class="dashboard" id="balancePage">
+            <div class="card">
+                <div class="card-logo"><div class="logo-icon">💵</div><h1>Check Balance</h1><p>View your account balance</p></div>
+                <div class="balance-card"><div class="label">Available Balance</div><div class="amount">$<span id="balanceAmount">0.00</span></div></div>
+                <div class="verified-info" id="verifiedInfo"><p>✓ Verified Account</p><span id="balanceUserid"></span></div>
+                <button class="btn btn-primary" onclick="refreshBalance()">Refresh Balance</button>
+                <button class="btn btn-secondary" onclick="showDashboard()">Back to Dashboard</button>
+            </div>
+        </div>
+        <div class="dashboard" id="transferPage">
+            <div class="card">
+                <div class="card-logo"><div class="logo-icon">💸</div><h1>Transfer Money</h1><p>Send money securely</p></div>
+                <div class="message" id="transferMessage"></div>
+                <form id="transferForm">
+                    <div class="form-group"><label>Recipient User ID</label><input type="text" id="transferTo" placeholder="Enter recipient's User ID" required></div>
+                    <div class="form-group"><label>Amount to Transfer ($)</label><input type="number" id="transferAmount" placeholder="Enter amount" min="1" step="0.01" required></div>
+                    <button type="submit" class="btn btn-primary" id="transferBtn">Transfer Money</button>
+                </form>
+                <button class="btn btn-secondary" onclick="showDashboard()">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal"><h3>Confirm Transfer</h3><p>You are about to transfer</p><div class="amount">$<span id="modalAmount">0.00</span></div><p>to User ID: <span id="modalRecipient"></span></p><div class="modal-buttons"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-success" onclick="confirmTransfer()">Confirm Transfer</button></div></div>
+    </div>
+    <div class="chatbot-toggle" onclick="toggleChatbot()">💬</div>
+    <div class="chatbot-container" id="chatbot">
+        <div class="chatbot-header"><div class="avatar">🤖</div><div><h3>KodBank Assistant</h3><p>Online | Ready to help</p></div></div>
+        <div class="chatbot-messages" id="chatMessages"><div class="chat-message bot"><div class="bubble">Hello! I'm your KodBank assistant. How can I help you today?</div></div></div>
+        <div class="chatbot-input"><input type="text" id="chatInput" placeholder="Type your question..." onkeypress="handleChatKeyPress(event)"><button onclick="sendMessage()">➤</button></div>
+    </div>
+    <script>
+        // Dynamic API URL - works on both local and Vercel
+        const API_URL = window.location.origin + '/api';
+        function getToken() { return localStorage.getItem('kodbank_token'); }
+        function setToken(token) { localStorage.setItem('kodbank_token', token); }
+        function getUser() { const user = localStorage.getItem('kodbank_user'); return user ? JSON.parse(user) : null; }
+        function setUser(user) { localStorage.setItem('kodbank_user', JSON.stringify(user)); }
+        function logout() { localStorage.removeItem('kodbank_token'); localStorage.removeItem('kodbank_user'); showLogin(); }
+        function showPage(pageId) {
+            document.querySelectorAll('.page, .dashboard').forEach(page => { page.classList.remove('active'); });
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'loginPage' || pageId === 'registerPage') { document.getElementById('header').style.display = 'none'; }
+            else { document.getElementById('header').style.display = 'flex'; }
+        }
+        function showLogin() { showPage('loginPage'); document.getElementById('loginForm').reset(); hideMessage('loginMessage'); }
+        function showRegister() { showPage('registerPage'); document.getElementById('registerForm').reset(); hideMessage('registerMessage'); }
+        function showDashboard() {
+            const user = getUser();
+            if (!user) { showLogin(); return; }
+            document.getElementById('welcomeName').textContent = user.full_name.split(' ')[0];
+            document.getElementById('userInfo').textContent = 'Hi, ' + user.full_name;
+            loadTransactions(); showPage('dashboard');
+        }
+        function showBalancePage() { showPage('balancePage'); setTimeout(refreshBalance, 100); }
+        function showTransferPage() { showPage('transferPage'); document.getElementById('transferForm').reset(); hideMessage('transferMessage'); }
+        function showMessage(elementId, message, type) { const element = document.getElementById(elementId); element.textContent = message; element.className = 'message ' + type; element.style.display = 'block'; }
+        function hideMessage(elementId) { document.getElementById(elementId).style.display = 'none'; }
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn'); btn.disabled = true; btn.innerHTML = '<span class="loading"></span>Logging in...';
+            const userid = document.getElementById('loginUserid').value; const password = document.getElementById('loginPassword').value;
+            try {
+                const response = await fetch(API_URL + '/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userid, password }) });
+                const data = await response.json();
+                if (data.success) { setToken(data.token); setUser(data.user); showDashboard(); }
+                else { showMessage('loginMessage', data.message, 'error'); }
+            } catch (error) { showMessage('loginMessage', 'Cannot connect to server. Is the app running?', 'error'); }
+            btn.disabled = false; btn.innerHTML = 'Login to Account';
+        });
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('registerBtn'); btn.disabled = true; btn.innerHTML = '<span class="loading"></span>Creating account...';
+            const full_name = document.getElementById('regFullName').value;
+            const userid = document.getElementById('regUserid').value;
+            const email = document.getElementById('regEmail').value;
+            const phone = document.getElementById('regPhone').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            if (password !== confirmPassword) { showMessage('registerMessage', 'Passwords do not match', 'error'); btn.disabled = false; btn.innerHTML = 'Create Account'; return; }
+            try {
+                const response = await fetch(API_URL + '/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name, userid, email, phone, password }) });
+                const data = await response.json();
+                if (data.success) { showMessage('registerMessage', data.message, 'success'); setTimeout(() => showLogin(), 2000); }
+                else { showMessage('registerMessage', data.message, 'error'); }
+            } catch (error) { showMessage('registerMessage', 'Cannot connect to server. Is the app running?', 'error'); }
+            btn.disabled = false; btn.innerHTML = 'Create Account';
+        });
+        async function refreshBalance() {
+            const token = getToken();
+            if (!token) { showLogin(); return; }
+            document.getElementById('balanceAmount').textContent = 'Loading...';
+            try {
+                const response = await fetch(API_URL + '/balance', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await response.json();
+                if (data.success) {
+                    const user = getUser(); user.balance = data.balance; setUser(user);
+                    document.getElementById('balanceAmount').textContent = '$' + data.balance.toFixed(2);
+                    document.getElementById('balanceUserid').textContent = 'User ID: ' + data.userid + ' | Email: ' + data.email;
+                } else { logout(); }
+            } catch (error) { document.getElementById('balanceAmount').textContent = 'Error loading'; }
+        }
+        async function loadTransactions() {
+            const token = getToken();
+            if (!token) return;
+            try {
+                const response = await fetch(API_URL + '/transactions', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await response.json();
+                if (data.success && data.transactions && data.transactions.length > 0) {
+                    const list = document.getElementById('transactionsList');
+                    list.innerHTML = data.transactions.slice(0, 5).map(t => '<div class="transaction-item"><div class="transaction-info"><div class="transaction-icon ' + t.type + '">' + (t.type === 'sent' ? '↑' : '↓') + '</div><div class="transaction-details"><h4>' + (t.type === 'sent' ? 'Sent to' : 'Received from') + '</h4><p>' + (t.type === 'sent' ? t.to_userid : t.from_userid) + '</p></div></div><div class="transaction-amount ' + t.type + '">' + (t.type === 'sent' ? '-' : '+') + '$' + t.amount.toFixed(2) + '</div></div>').join('');
+                }
+            } catch (error) { console.error('Error loading transactions:', error); }
+        }
+        let transferData = {};
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const to_userid = document.getElementById('transferTo').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            if (amount <= 0) { showMessage('transferMessage', 'Please enter a valid amount', 'error'); return; }
+            const user = getUser();
+            if (amount > user.balance) { showMessage('transferMessage', 'Insufficient balance! Your balance: $' + user.balance.toFixed(2), 'error'); return; }
+            transferData = { to_userid, amount };
+            document.getElementById('modalAmount').textContent = amount.toFixed(2);
+            document.getElementById('modalRecipient').textContent = to_userid;
+            document.getElementById('confirmModal').classList.add('show');
+        });
+        function closeModal() { document.getElementById('confirmModal').classList.remove('show'); }
+        async function confirmTransfer() {
+            const btn = document.querySelector('.modal .btn-success'); btn.disabled = true; btn.innerHTML = '<span class="loading"></span>Processing...';
+            const token = getToken();
+            try {
+                const response = await fetch(API_URL + '/transfer', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(transferData) });
+                const data = await response.json();
+                if (data.success) {
+                    showMessage('transferMessage', 'Transfer successful!', 'success');
+                    document.getElementById('transferForm').reset();
+                    const user = getUser(); user.balance = data.new_balance; setUser(user);
+                    setTimeout(() => { closeModal(); showDashboard(); }, 1500);
+                } else { showMessage('transferMessage', data.message, 'error'); closeModal(); }
+            } catch (error) { showMessage('transferMessage', 'Transfer failed. Please try again.', 'error'); closeModal(); }
+            btn.disabled = false; btn.innerHTML = 'Confirm Transfer';
+        }
+        function toggleChatbot() { const chatbot = document.getElementById('chatbot'); chatbot.classList.toggle('show'); }
+        function handleChatKeyPress(event) { if (event.key === 'Enter') { sendMessage(); } }
+        function sendMessage() {
+            const input = document.getElementById('chatInput'); const message = input.value.trim(); if (!message) return;
+            addMessage(message, 'user'); input.value = '';
+            setTimeout(() => { const response = getBotResponse(message); addMessage(response, 'bot'); }, 500);
+        }
+        function addMessage(text, type) { const messages = document.getElementById('chatMessages'); const div = document.createElement('div'); div.className = 'chat-message ' + type; div.innerHTML = '<div class="bubble">' + text + '</div>'; messages.appendChild(div); messages.scrollTop = messages.scrollHeight; }
+        function getBotResponse(message) {
+            const msg = message.toLowerCase();
+            if (msg.includes('balance') || msg.includes('check')) { return 'To check your balance, click on "Check Balance" in the navigation menu. Your current balance will be displayed from the database.'; }
+            else if (msg.includes('transfer') || msg.includes('send money')) { return 'To transfer money, click on "Transfer" in the menu. You\'ll need the recipient\'s User ID and the amount you want to send.'; }
+            else if (msg.includes('register') || msg.includes('signup')) { return 'To create an account, click "Register Now" on the login page. You\'ll need to provide your name, user ID, email, phone, and password.'; }
+            else if (msg.includes('login') || msg.includes('sign in')) { return 'Enter your User ID and password on the login page to access your account.'; }
+            else if (msg.includes('password')) { return 'If you forgot your password, please contact our support team.'; }
+            else if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) { return 'Hello! How can I help you with KodBank today?'; }
+            else if (msg.includes('thank')) { return 'You\'re welcome! Is there anything else I can help you with?'; }
+            else if (msg.includes('help')) { return 'I can help you with:\n• Checking your balance\n• Transferring money\n• Account registration\n• Login issues'; }
+            else if (msg.includes('contact') || msg.includes('support')) { return 'For support, you can email us at support@kodbank.com or call our helpline.'; }
+            else if (msg.includes('about')) { return 'KodBank is your trusted digital bank. We provide secure banking services including balance checks, money transfers, and more.'; }
+            else if (msg.includes('safe') || msg.includes('secure')) { return 'Yes! KodBank uses JWT tokens and secure password hashing (bcrypt) to keep your account safe.'; }
+            else if (msg.includes('transaction') || msg.includes('history')) { return 'You can view your recent transactions on the Dashboard.'; }
+            else { return 'I\'m not sure about that. Try asking about:\n• Balance checks\n• Money transfers\n• Registration\n• Account security\n• Or type "help" for more options!'; }
+        }
+        window.addEventListener('load', () => { const user = getUser(); if (user) { showDashboard(); } else { showLogin(); } });
+    </script>
+</body>
+</html>
