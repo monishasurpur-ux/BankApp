@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
@@ -11,10 +11,27 @@ app = Flask(__name__)
 # Configuration - Vercel compatible
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'kodbank-secret-key-2024')
 
-# Database path - use /tmp for Vercel serverless
-db_path = os.path.join('/tmp', 'kodbank.db')
+# Database configuration - supports both SQLite (local) and PostgreSQL (Vercel/Neon)
+# For local development: uses SQLite
+# For production (Vercel): uses PostgreSQL from DATABASE_URL or NEON_DB_URL
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+# Check for PostgreSQL connection string
+database_url = os.environ.get('DATABASE_URL') or os.environ.get('NEON_DB_URL')
+
+if database_url:
+    # Use PostgreSQL (Neon or other PostgreSQL provider)
+    # Fix PostgreSQL URL format for SQLAlchemy if needed
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # Fallback to SQLite for local development
+    instance_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'instance')
+    if not os.path.exists(instance_dir):
+        os.makedirs(instance_dir)
+    db_path = os.path.join(instance_dir, 'kodbank.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'kodbank-jwt-secret-2024')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
